@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta — ya·horta Arquitetura & Interiores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage:       #8A9A7E;
+    --sage-dark:  #6E7D63;
+    --sage-pale:  #E7EBE1;
+    --gold:       #BFA15C;
+    --gold-soft:  #D9C28C;
+    --cream:      #F4F0E7;
+    --cream-2:    #ECE6D8;
+    --ink:        #20211C;
+    --ink-soft:   #3A3B34;
+    --clay:       #C28E73;
+    --muted:      #877F70;
+    --line:       rgba(32,33,28,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  @media (max-width: 768px) { html, body { overflow: auto; } }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── SLIDE CONTAINER ─── */
+  .slides-wrapper {
+    display: flex;
+    flex-direction: row;
+    width: calc(100vw * 6);
+    height: 100vh;
+    transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+    will-change: transform;
+  }
+
+  .slide {
+    width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ─── TYPOGRAPHY HELPERS ─── */
+  .serif { font-family: 'Cormorant Garamond', serif; }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* ─── BRAND LOGO ─── */
+  .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .brand .bdot {
+    display: inline-block;
+    width: 0.13em; height: 0.13em;
+    min-width: 0;
+    border-radius: 50%;
+    background: var(--gold);
+    margin: 0 0.28em;
+    flex-shrink: 0;
+  }
+  .brand-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ─── NAV ARROWS ─── */
+  .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+    user-select: none;
+  }
+  .nav-arrow:hover {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: #fff;
+    transform: translateY(-50%) scale(1.08);
+  }
+  .nav-arrow.prev { left: 22px; }
+  .nav-arrow.next { right: 22px; }
+  .nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+  /* ─── DOTS ─── */
+  .nav-dots {
+    position: fixed;
+    bottom: 26px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex; gap: 9px; align-items: center;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(32,33,28,0.22);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .dot.active { width: 26px; border-radius: 4px; background: var(--gold); }
+
+  /* dark slides → light dots */
+  body.dark-dots .dot { background: rgba(255,255,255,0.3); }
+  body.dark-dots .dot.active { background: var(--gold-soft); }
+
+  /* ─── WATERMARK + PAGE NUM ─── */
+  .logo-mark {
+    position: absolute;
+    top: 30px; left: 48px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 500;
+    letter-spacing: 1px;
+    opacity: 0.85;
+    z-index: 5;
+  }
+  .logo-mark .bdot {
+    display: inline-block;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin: 0 3px;
+    vertical-align: middle;
+  }
+  .slide-num {
+    position: absolute;
+    bottom: 30px; right: 48px;
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 2px;
+    opacity: 0.5;
+    z-index: 5;
+  }
+  .slide-dark .logo-mark,
+  .slide-dark .slide-num { color: var(--cream); }
+
+  /* ─── SHARED HEADER ─── */
+  .slide-header { max-width: 720px; }
+  .slide-header.center { text-align: center; margin: 0 auto; }
+  .slide-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 4.6vw, 56px);
+    font-weight: 500;
+    line-height: 1.08;
+    margin: 14px 0 14px;
+  }
+  .slide-title em { font-style: italic; color: var(--sage-dark); }
+  .slide-desc {
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.75;
+    color: var(--muted);
+    max-width: 560px;
+  }
+  .center .slide-desc { margin: 0 auto; }
+
+  /* ═══════════════════════════════════════════
+     SLIDE 1 — CAPA
+  ═══════════════════════════════════════════ */
+  .slide-1 {
+    background:
+      radial-gradient(120% 120% at 80% 10%, rgba(191,161,92,0.10) 0%, transparent 45%),
+      linear-gradient(150deg, #23241E 0%, #2C2E25 45%, #1B1C16 100%);
+    flex-direction: column;
+    text-align: center;
+  }
+  .slide-1::before {
+    content: '';
+    position: absolute;
+    bottom: -160px; left: -120px;
+    width: 460px; height: 460px;
+    background: radial-gradient(circle, rgba(138,154,126,0.28) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .cover-inner {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 30px;
+  }
+  .cover-logo {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .cover-logo .brand {
+    font-size: 56px; color: var(--cream);
+  }
+  .cover-logo .brand-sub { color: rgba(244,240,231,0.55); }
+  .cover-rule {
+    width: 64px; height: 1px;
+    background: var(--gold);
+    margin: 6px 0;
+  }
+  .cover-eyebrow {
+    color: var(--gold-soft);
+    letter-spacing: 5px;
+  }
+  .cover-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(34px, 5.2vw, 64px);
+    font-weight: 500;
+    color: var(--cream);
+    line-height: 1.1;
+    max-width: 760px;
+  }
+  .cover-title em { font-style: italic; color: var(--gold-soft); }
+  .cover-meta {
+    display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+    margin-top: 4px;
+  }
+  .cover-chip {
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 1px;
+    color: rgba(244,240,231,0.8);
+    border: 1px solid rgba(244,240,231,0.22);
+    border-radius: 50px;
+    padding: 8px 18px;
+  }
+  .cover-foot {
+    position: absolute;
+    bottom: 34px; left: 0; right: 0;
+    text-align: center;
+    font-size: 12px; letter-spacing: 2px;
+    color: rgba(244,240,231,0.45);
+    z-index: 2;
+  }
+
+  /* ═══════════════════════════════════════════
+     SLIDE 2 — O QUE INCLUI
+  ═══════════════════════════════════════════ */
+  .slide-2 { background: var(--cream); flex-direction: column; gap: 46px; }
+  .includes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    width: 100%; max-width: 1120px;
+  }
+  .inc-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 30px 26px;
+    transition: transform 0.25s, box-shadow 0.25s;
+    position: relative;
+  }
+  .inc-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 40px rgba(32,33,28,0.08);
+  }
+  .inc-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+  .inc-icon {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: var(--sage-pale);
+    margin: 14px 0 16px;
+  }
+  .inc-icon svg { width: 22px; height: 22px; stroke: var(--sage-dark); }
+  .inc-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .inc-desc {
+    font-size: 13.5px; font-weight: 300;
+    line-height: 1.65; color: var(--muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     SLIDE 3 — REFERÊNCIA / PRÉVIA
+  ═══════════════════════════════════════════ */
+  .slide-3 { background: var(--cream-2); }
+  .ref-layout {
+    display: grid;
+    grid-template-columns: 0.92fr 1.08fr;
+    gap: 56px;
+    align-items: center;
+    max-width: 1140px; width: 100%;
+  }
+  .ref-copy .slide-title { margin-top: 10px; }
+  .ref-points {
+    list-style: none;
+    margin-top: 24px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .ref-points li {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 14px; font-weight: 300; color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .ref-points li b { font-weight: 500; }
+  .ref-points .tick {
+    flex-shrink: 0; margin-top: 2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--sage); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+  .ref-frame {
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 30px 70px rgba(32,33,28,0.22);
+    border: 1px solid rgba(255,255,255,0.6);
+    max-height: 74vh;
+  }
+  .ref-frame img {
+    width: 100%; display: block;
+    object-fit: cover; object-position: top;
+  }
+  .ref-tag {
+    position: absolute; top: 16px; left: 16px;
+    background: rgba(32,33,28,0.78);
+    backdrop-filter: blur(6px);
+    color: var(--cream);
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 50px;
+  }
+
+  /* ═══════════════════════════════════════════
+     SLIDE 4 — COMO FUNCIONA
+  ═══════════════════════════════════════════ */
+  .slide-4 { background: var(--cream); flex-direction: column; gap: 54px; }
+  .steps {
+    display: flex; max-width: 1120px; width: 100%;
+    position: relative;
+  }
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 26px; left: 8%; right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold), var(--sage));
+    z-index: 0;
+  }
+  .step {
+    flex: 1; text-align: center;
+    padding: 0 14px;
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .step-num {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+  }
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 21px; font-weight: 600; margin-bottom: 6px;
+  }
+  .step-desc { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.6; }
+  .facts {
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    max-width: 980px; width: 100%;
+  }
+  .fact {
+    flex: 1; min-width: 200px;
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 22px 26px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .fact-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px; font-weight: 600; color: var(--sage-dark);
+    line-height: 1;
+  }
+  .fact-lbl { font-size: 12.5px; font-weight: 300; color: var(--muted); }
+
+  /* ═══════════════════════════════════════════
+     SLIDE 5 — INVESTIMENTO
+  ═══════════════════════════════════════════ */
+  .slide-5 { background: var(--cream-2); flex-direction: column; gap: 40px; }
+  .invest-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 22px; max-width: 1000px; width: 100%;
+  }
+  .price-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 36px 34px;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .price-card.feature {
+    background: linear-gradient(160deg, #25271F 0%, #1B1C16 100%);
+    border-color: transparent;
+    color: var(--cream);
+  }
+  .pc-eyebrow { letter-spacing: 3px; }
+  .price-card.feature .pc-eyebrow { color: var(--gold-soft); }
+  .pc-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 600;
+    margin: 8px 0 18px;
+  }
+  .pc-price {
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1; margin-bottom: 6px;
+  }
+  .pc-price .cur { font-size: 22px; vertical-align: top; color: var(--gold); }
+  .pc-price .amt { font-size: 58px; font-weight: 600; }
+  .pc-price .per { font-size: 16px; color: var(--muted); }
+  .price-card.feature .pc-price .per { color: rgba(244,240,231,0.6); }
+  .pc-list {
+    list-style: none; margin-top: 20px;
+    display: flex; flex-direction: column; gap: 11px;
+  }
+  .pc-list li {
+    display: flex; gap: 11px; align-items: flex-start;
+    font-size: 13.5px; font-weight: 300;
+    line-height: 1.5;
+  }
+  .pc-list .tick {
+    flex-shrink: 0; margin-top: 2px;
+    width: 17px; height: 17px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #fff; background: var(--sage);
+  }
+  .price-card.feature .pc-list .tick { background: var(--gold); }
+  .pc-divider { height: 1px; background: var(--line); margin: 20px 0; }
+  .price-card.feature .pc-divider { background: rgba(244,240,231,0.14); }
+  .pay-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; padding: 5px 0;
+  }
+  .pay-row .lbl { color: rgba(244,240,231,0.65); font-weight: 300; }
+  .pay-row .val { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; }
+  .pay-row .val.gold { color: var(--gold-soft); }
+  .total-bar {
+    max-width: 1000px; width: 100%;
+    background: var(--sage);
+    border-radius: 6px;
+    padding: 20px 34px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: #fff;
+  }
+  .total-bar .t-lbl { font-size: 13px; letter-spacing: 1px; font-weight: 300; opacity: 0.9; }
+  .total-bar .t-val { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600; }
+  .total-bar .t-note { font-size: 11.5px; opacity: 0.8; font-weight: 300; }
+
+  /* ═══════════════════════════════════════════
+     SLIDE 6 — ENCERRAMENTO
+  ═══════════════════════════════════════════ */
+  .slide-6 {
+    background:
+      radial-gradient(120% 120% at 20% 90%, rgba(138,154,126,0.12) 0%, transparent 45%),
+      linear-gradient(150deg, #23241E 0%, #2C2E25 50%, #1B1C16 100%);
+    flex-direction: column; text-align: center;
+  }
+  .slide-6::after {
+    content: '';
+    position: absolute;
+    top: -140px; right: -120px;
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(191,161,92,0.18) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .closing {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; gap: 26px;
+    max-width: 720px;
+  }
+  .closing .cover-rule { background: var(--gold); }
+  .closing-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(34px, 5vw, 60px);
+    font-weight: 500; color: var(--cream); line-height: 1.12;
+  }
+  .closing-title em { font-style: italic; color: var(--gold-soft); }
+  .closing-desc {
+    font-size: 16px; font-weight: 300; line-height: 1.75;
+    color: rgba(244,240,231,0.72);
+  }
+  .closing-contacts { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 9px;
+    border: 1px solid rgba(244,240,231,0.22);
+    border-radius: 50px; padding: 11px 22px;
+    color: var(--cream); font-size: 14px; font-weight: 400;
+    text-decoration: none; transition: all 0.25s;
+  }
+  .chip:hover { background: var(--sage); border-color: var(--sage); }
+  .chip svg { width: 16px; height: 16px; }
+  .closing-sign {
+    font-size: 11.5px; letter-spacing: 2px;
+    color: rgba(244,240,231,0.4);
+    margin-top: 6px;
+  }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .slides-wrapper {
+      flex-direction: column;
+      width: 100vw !important; height: auto !important;
+      transform: none !important; transition: none !important;
+    }
+    .slide {
+      display: none;
+      width: 100vw; height: auto; min-height: 100svh;
+      padding: 70px 22px 84px;
+      align-items: flex-start;
+    }
+    .slide.active { display: flex; }
+
+    .nav-arrow { width: 40px; height: 40px; font-size: 15px; }
+    .nav-arrow.prev { left: 8px; } .nav-arrow.next { right: 8px; }
+
+    .logo-mark { font-size: 17px; top: 20px; left: 22px; }
+    .slide-num { bottom: 22px; right: 22px; }
+
+    .slide-title { font-size: 30px; }
+
+    /* capa */
+    .cover-logo .brand { font-size: 40px; }
+    .cover-title { font-size: 30px; }
+    .cover-meta { gap: 8px; }
+    .cover-chip { font-size: 11px; padding: 6px 14px; }
+
+    /* inclui */
+    .slide-2 { gap: 30px; }
+    .includes-grid { grid-template-columns: 1fr; gap: 12px; }
+    .inc-card { padding: 22px 20px; }
+    .inc-title { font-size: 21px; }
+
+    /* referência */
+    .ref-layout { grid-template-columns: 1fr; gap: 26px; }
+    .ref-frame { max-height: 52vh; order: 2; }
+    .ref-copy { order: 1; }
+
+    /* como funciona */
+    .slide-4 { gap: 34px; }
+    .steps { flex-direction: column; gap: 22px; align-items: center; }
+    .steps::before { display: none; }
+    .step { max-width: 300px; }
+    .facts { flex-direction: column; }
+    .fact { min-width: unset; width: 100%; }
+
+    /* investimento */
+    .invest-grid { grid-template-columns: 1fr; gap: 14px; }
+    .price-card { padding: 26px 24px; }
+    .total-bar { flex-direction: column; gap: 6px; text-align: center; padding: 20px; }
+
+    /* encerramento */
+    .closing-title { font-size: 30px; }
+    .closing-desc { font-size: 14px; }
+    .closing-contacts { flex-direction: column; align-items: center; }
+  }
+
+  @media print { .slide { min-height: 100vh; } }
+</style>
+</head>
+<body>
+<div class="slides-wrapper">
+
+<!-- ═══════════ SLIDE 1 — CAPA ═══════════ -->
+<section class="slide slide-1 slide-dark">
+  <div class="cover-inner">
+    <div class="cover-logo">
+      <span class="brand">ya<span class="bdot"></span>horta</span>
+      <span class="brand-sub">Arquitetura &amp; Interiores</span>
+    </div>
+    <div class="cover-rule"></div>
+    <div class="eyebrow cover-eyebrow">Proposta Comercial · 2026</div>
+    <h1 class="cover-title">
+      Um site à altura do<br><em>design que você cria</em>
+    </h1>
+    <div class="cover-meta">
+      <span class="cover-chip">Site profissional</span>
+      <span class="cover-chip">E-mail próprio</span>
+      <span class="cover-chip">Domínio + hospedagem</span>
+    </div>
+  </div>
+  <div class="cover-foot">PREPARADO PARA YASMIN HORTA</div>
+  <div class="slide-num">01 — 06</div>
+</section>
+
+<!-- ═══════════ SLIDE 2 — O QUE INCLUI ═══════════ -->
+<section class="slide slide-2">
+  <div class="logo-mark">ya<span class="bdot"></span>horta</div>
+  <div class="slide-header center">
+    <div class="eyebrow">O que está incluso</div>
+    <h2 class="slide-title">Presença digital <em>completa</em></h2>
+    <p class="slide-desc">Mais que um site: a estrutura inteira para o seu trabalho ser encontrado, lembrado e contratado com profissionalismo.</p>
+  </div>
+
+  <div class="includes-grid">
+    <div class="inc-card">
+      <div class="inc-num">01</div>
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="1"/><path d="M3 8h18M8 21h8M12 18v3"/></svg>
+      </div>
+      <div class="inc-title">Site sob medida</div>
+      <div class="inc-desc">Layout exclusivo na sua identidade ya·horta — verde, dourado e tipografia da marca, com acabamento editorial.</div>
+    </div>
+
+    <div class="inc-card">
+      <div class="inc-num">02</div>
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 18h2"/></svg>
+      </div>
+      <div class="inc-title">100% responsivo</div>
+      <div class="inc-desc">Perfeito no celular, tablet e computador — onde a maioria dos seus clientes vai te descobrir, no Instagram.</div>
+    </div>
+
+    <div class="inc-card">
+      <div class="inc-num">03</div>
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg>
+      </div>
+      <div class="inc-title">Seções essenciais</div>
+      <div class="inc-desc">Home, sobre, serviços, portfólio de projetos, processo e contato — a jornada completa até o orçamento.</div>
+    </div>
+
+    <div class="inc-card">
+      <div class="inc-num">04</div>
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+      </div>
+      <div class="inc-title">E-mail profissional</div>
+      <div class="inc-desc">Endereço próprio (ex.: contato@yasminhorta.com.br) — muito mais credibilidade que um @gmail.</div>
+    </div>
+
+    <div class="inc-card">
+      <div class="inc-num">05</div>
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      </div>
+      <div class="inc-title">Domínio + hospedagem</div>
+      <div class="inc-desc">Registro do seu domínio, hospedagem e certificado de segurança (cadeado) — tudo configurado por mim.</div>
+    </div>
+
+    <div class="inc-card">
+      <div class="inc-num">06</div>
+      <div class="inc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 1 6 6c0 4-3 5-3 8H9c0-3-3-4-3-8a6 6 0 0 1 6-6Z"/><path d="M9 21h6"/></svg>
+      </div>
+      <div class="inc-title">SEO + suporte</div>
+      <div class="inc-desc">Otimização para o Google, integração com WhatsApp e Instagram e 30 dias de suporte para ajustes.</div>
+    </div>
+  </div>
+  <div class="slide-num">02 — 06</div>
+</section>
+
+<!-- ═══════════ SLIDE 3 — REFERÊNCIA / PRÉVIA ═══════════ -->
+<section class="slide slide-3">
+  <div class="logo-mark">ya<span class="bdot"></span>horta</div>
+  <div class="ref-layout">
+    <div class="ref-copy">
+      <div class="eyebrow">Ponto de partida</div>
+      <h2 class="slide-title">Partimos da sua <em>identidade</em>, já pronta</h2>
+      <p class="slide-desc">Você já tem logo, paleta e a direção visual definida. Meu trabalho é transformar isso em um site rápido, elegante e que converte visitas em projetos.</p>
+      <ul class="ref-points">
+        <li><span class="tick">✓</span><span><b>Identidade aproveitada:</b> logo, verde-sálvia e dourado aplicados com refinamento.</span></li>
+        <li><span class="tick">✓</span><span><b>Vitrine de projetos:</b> seus ambientes em destaque, com fotos em alta.</span></li>
+        <li><span class="tick">✓</span><span><b>Caminho até o contato:</b> processo claro do briefing à execução.</span></li>
+        <li><span class="tick">✓</span><span><b>Pronto para crescer:</b> base para adicionar novos projetos quando quiser.</span></li>
+      </ul>
+    </div>
+    <div class="ref-frame">
+      <span class="ref-tag">Referência de identidade</span>
+      <img src="referencias/site_mockup.jpeg" alt="Referência de identidade visual ya·horta">
+    </div>
+  </div>
+  <div class="slide-num">03 — 06</div>
+</section>
+
+<!-- ═══════════ SLIDE 4 — COMO FUNCIONA ═══════════ -->
+<section class="slide slide-4">
+  <div class="logo-mark">ya<span class="bdot"></span>horta</div>
+  <div class="slide-header center">
+    <div class="eyebrow">Como funciona</div>
+    <h2 class="slide-title">Do briefing ao ar em <em>15 dias</em></h2>
+    <p class="slide-desc">Processo simples e transparente. Você foca nos seus projetos; eu cuido de toda a parte técnica.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">I</div>
+      <div class="step-title">Aprovação</div>
+      <div class="step-desc">Proposta aceita e entrada para reservar a agenda.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">II</div>
+      <div class="step-title">Briefing</div>
+      <div class="step-desc">Coleto textos, fotos de projetos e referências com você.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">III</div>
+      <div class="step-title">Criação</div>
+      <div class="step-desc">Desenvolvo o site e configuro domínio, e-mail e hospedagem.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">IV</div>
+      <div class="step-title">No ar</div>
+      <div class="step-desc">Revisões finais, ajustes e o site publicado para o mundo.</div>
+    </div>
+  </div>
+
+  <div class="facts">
+    <div class="fact">
+      <div class="fact-val">15</div>
+      <div class="fact-lbl">dias de prazo<br>de entrega</div>
+    </div>
+    <div class="fact">
+      <div class="fact-val">3</div>
+      <div class="fact-lbl">rodadas de<br>revisão inclusas</div>
+    </div>
+    <div class="fact">
+      <div class="fact-val">30</div>
+      <div class="fact-lbl">dias de suporte<br>pós-entrega</div>
+    </div>
+  </div>
+  <div class="slide-num">04 — 06</div>
+</section>
+
+<!-- ═══════════ SLIDE 5 — INVESTIMENTO ═══════════ -->
+<section class="slide slide-5">
+  <div class="logo-mark">ya<span class="bdot"></span>horta</div>
+  <div class="slide-header center">
+    <div class="eyebrow">Investimento</div>
+    <h2 class="slide-title">Valor justo, <em>sem surpresas</em></h2>
+  </div>
+
+  <div class="invest-grid">
+    <!-- Site -->
+    <div class="price-card feature">
+      <div class="eyebrow pc-eyebrow">Projeto do site</div>
+      <div class="pc-name">Site profissional</div>
+      <div class="pc-price"><span class="cur">R$</span> <span class="amt">5.000</span></div>
+      <ul class="pc-list">
+        <li><span class="tick">✓</span> Design sob medida na identidade ya·horta</li>
+        <li><span class="tick">✓</span> Site completo e 100% responsivo</li>
+        <li><span class="tick">✓</span> Portfólio de projetos + contato</li>
+        <li><span class="tick">✓</span> SEO básico e integrações</li>
+        <li><span class="tick">✓</span> 3 revisões + 30 dias de suporte</li>
+      </ul>
+      <div class="pc-divider"></div>
+      <div class="pay-row"><span class="lbl">Entrada (10%)</span><span class="val gold">R$ 500</span></div>
+      <div class="pay-row"><span class="lbl">+ 2x de</span><span class="val">R$ 2.250</span></div>
+    </div>
+
+    <!-- Pacote anual -->
+    <div class="price-card">
+      <div class="eyebrow pc-eyebrow">Manutenção anual</div>
+      <div class="pc-name">Domínio + e-mail + hospedagem</div>
+      <div class="pc-price"><span class="cur">R$</span> <span class="amt">1.000</span><span class="per">/ano</span></div>
+      <ul class="pc-list">
+        <li><span class="tick">✓</span> Registro e renovação do domínio</li>
+        <li><span class="tick">✓</span> E-mail profissional no seu domínio</li>
+        <li><span class="tick">✓</span> Hospedagem + certificado de segurança</li>
+        <li><span class="tick">✓</span> Site no ar e atualizado o ano todo</li>
+        <li><span class="tick">✓</span> Renova anualmente (cancela quando quiser)</li>
+      </ul>
+      <div class="pc-divider"></div>
+      <div class="pay-row"><span class="lbl" style="color:var(--muted)">Pagamento</span><span class="val" style="color:var(--sage-dark)">Anual</span></div>
+    </div>
+  </div>
+
+  <div class="total-bar">
+    <div>
+      <div class="t-lbl">INVESTIMENTO NO 1º ANO</div>
+      <div class="t-note">Site R$ 5.000 + pacote anual R$ 1.000 · depois apenas R$ 1.000/ano</div>
+    </div>
+    <div class="t-val">R$ 6.000</div>
+  </div>
+  <div class="slide-num">05 — 06</div>
+</section>
+
+<!-- ═══════════ SLIDE 6 — ENCERRAMENTO ═══════════ -->
+<section class="slide slide-6 slide-dark">
+  <div class="closing">
+    <span class="brand" style="font-size:34px;color:var(--cream)">ya<span class="bdot"></span>horta</span>
+    <div class="cover-rule"></div>
+    <h2 class="closing-title">Vamos colocar seu trabalho<br><em>no lugar que ele merece?</em></h2>
+    <p class="closing-desc">Seus projetos transformam espaços. Um site à altura transforma quem te encontra em cliente. Quando quiser começar, é só me chamar.</p>
+    <div class="closing-contacts">
+      <a href="https://wa.me/5511000000000" class="chip">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.2 1.1-1.7 1.2-.4 0-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.7-4.4-3.9-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.7 1.8c.1.2.1.3 0 .5l-.4.6c-.2.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.2.1.4.1.6-.1l.7-.8c.2-.2.4-.2.6-.1l1.7.8c.2.1.4.2.5.3.1.3.1.6-.1 1.3Z"/></svg>
+        WhatsApp
+      </a>
+      <a href="mailto:matheus.puppe@gmail.com" class="chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        matheus.puppe@gmail.com
+      </a>
+    </div>
+    <div class="closing-sign">PROPOSTA ELABORADA POR MATHEUS PUPPE · 2026</div>
+  </div>
+  <div class="slide-num">06 — 06</div>
+</section>
+
+</div>
+
+<button class="nav-arrow prev" id="prevBtn" onclick="changeSlide(-1)">&#8592;</button>
+<button class="nav-arrow next" id="nextBtn" onclick="changeSlide(1)">&#8594;</button>
+<div class="nav-dots" id="dots"></div>
+
+<script>
+  const TOTAL = 6;
+  let current = 0;
+  const wrapper = document.querySelector('.slides-wrapper');
+  const slides  = document.querySelectorAll('.slide');
+  const dotsEl  = document.getElementById('dots');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const isMobile = () => window.innerWidth <= 768;
+
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    current = Math.max(0, Math.min(TOTAL - 1, n));
+    if (isMobile()) {
+      slides.forEach((s, i) => s.classList.toggle('active', i === current));
+      window.scrollTo(0, 0);
+    } else {
+      slides.forEach(s => s.classList.add('active'));
+      wrapper.style.transform = `translateX(-${current * 100}vw)`;
+    }
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    document.body.classList.toggle('dark-dots', slides[current].classList.contains('slide-dark'));
+    prevBtn.classList.toggle('hidden', current === 0);
+    nextBtn.classList.toggle('hidden', current === TOTAL - 1);
+  }
+  function changeSlide(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+  });
+
+  let startX = 0, startY = 0;
+  document.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) changeSlide(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  window.addEventListener('resize', () => goTo(current));
+  goTo(0);
+</script>
+</body>
+</html>
